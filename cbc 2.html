@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تفسیر آزمایش CBC با سکه</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      direction: rtl;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 15px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input, select, button {
+      padding: 7px;
+      margin-top: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #aaa;
+    }
+    button {
+      cursor: pointer;
+      background-color: #2a9df4;
+      color: white;
+      border: none;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+    }
+    button:hover:not(:disabled) {
+      background-color: #0c7cd5;
+    }
+    #result, #supplementary {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      min-height: 100px;
+    }
+    #coins {
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .coin-packages {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    .coin-packages button {
+      width: 30%;
+      font-size: 13px;
+      padding: 10px;
+      background-color: #4caf50;
+      border: none;
+      border-radius: 4px;
+      color: white;
+    }
+    .coin-packages button:hover {
+      background-color: #3a8c40;
+    }
+    .note {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>اپلیکیشن تفسیر آزمایش CBC</h1>
+
+  <label for="age">سن (سال):</label>
+  <input type="number" id="age" min="0" max="120" placeholder="مثلاً 30" />
+
+  <label for="gender">جنسیت:</label>
+  <select id="gender">
+    <option value="">انتخاب کنید</option>
+    <option value="مرد">مرد</option>
+    <option value="زن">زن</option>
+  </select>
+
+  <hr />
+
+  <label for="Hb">هموگلوبین (Hb) (g/dL):</label>
+  <input type="number" id="Hb" step="0.1" />
+
+  <label for="WBC">گلبول سفید (WBC) (10³/μL):</label>
+  <input type="number" id="WBC" step="0.1" />
+
+  <label for="Plt">پلاکت (Plt) (10³/μL):</label>
+  <input type="number" id="Plt" />
+
+  <label for="Hct">هماتوکریت (Hct) (%):</label>
+  <input type="number" id="Hct" step="0.1" />
+
+  <label for="MCV">MCV (fL):</label>
+  <input type="number" id="MCV" step="0.1" />
+
+  <label for="MCH">MCH (pg):</label>
+  <input type="number" id="MCH" step="0.1" />
+
+  <label for="MCHC">MCHC (g/dL):</label>
+  <input type="number" id="MCHC" step="0.1" />
+
+  <button id="interpretBtn" disabled>تفسیر آزمایش (یک سکه کم می‌شود)</button>
+
+  <div id="coins">تعداد سکه شما: <span id="coinCount">5</span></div>
+
+  <div class="coin-packages">
+    <button data-coins="10" data-price="200000">خرید ۱۰ سکه - ۲۰۰ هزار تومان</button>
+    <button data-coins="15" data-price="270000">خرید ۱۵ سکه - ۲۷۰ هزار تومان</button>
+    <button data-coins="20" data-price="350000">خرید ۲۰ سکه - ۳۵۰ هزار تومان</button>
+  </div>
+  <div class="note">* خرید شبیه‌سازی شده است و پرداخت واقعی انجام نمی‌شود.</div>
+
+  <div id="result"></div>
+  <div id="supplementary"></div>
+
+<script>
+  // محدوده‌های نرمال
+  const normalRanges = {
+    Hb: {
+      male: { min: 13.8, max: 17.2 },
+      female: { min: 12.1, max: 15.1 },
+    },
+    WBC: { min: 4.5, max: 11 },
+    Plt: { min: 150, max: 450 },
+    Hct: {
+      male: { min: 41, max: 50 },
+      female: { min: 36, max: 44 },
+    },
+    MCV: { min: 80, max: 96 },
+    MCH: { min: 27, max: 33 },
+    MCHC: { min: 32, max: 36 },
+  };
+
+  const supplementaryTests = {
+    lowHb: ['آزمایش آهن', 'فریتین', 'سطح ویتامین B12', 'تست کم‌خونی'],
+    highHb: ['بررسی کم‌آبی بدن', 'بررسی مشکلات ریوی و قلبی'],
+    lowWbc: ['آزمایش بررسی سیستم ایمنی', 'بررسی عفونت‌های مزمن'],
+    highWbc: ['آزمایش مارکرهای عفونت', 'بررسی التهاب و بیماری‌های خونی'],
+    lowPlt: ['بررسی عملکرد مغز استخوان', 'آزمایش لخته‌شدن خون', 'بررسی بیماری‌های خون'],
+    highPlt: ['آزمایش التهاب', 'بررسی بیماری‌های مغز استخوان'],
+    lowHct: ['بررسی کم‌خونی', 'آزمایش آهن و ویتامین‌ها'],
+    highHct: ['بررسی کم‌آبی و مشکلات تنفسی'],
+  };
+
+  // وضعیت سکه (ذخیره در localStorage)
+  function getCoins() {
+    return Number(localStorage.getItem('coins')) || 5;
+  }
+  function setCoins(val) {
+    localStorage.setItem('coins', val);
+    document.getElementById('coinCount').textContent = val;
+    updateInterpretButton();
+  }
+  function updateInterpretButton() {
+    const coins = getCoins();
+    document.getElementById('interpretBtn').disabled = coins < 1;
+  }
+
+  // تفسیر آزمایش
+  function interpretCBC(cbcValues, age, gender) {
+    const interpretation = [];
+    const tests = new Set();
+
+    const sex = (gender.toLowerCase() === 'مرد' || gender.toLowerCase() === 'male') ? 'male' : 'female';
+
+    if (cbcValues.Hb < normalRanges.Hb[sex].min) {
+      interpretation.push('هموگلوبین شما پایین است که ممکن است نشان‌دهنده کم‌خونی باشد.');
+      supplementaryTests.lowHb.forEach(t => tests.add(t));
+    } else if (cbcValues.Hb > normalRanges.Hb[sex].max) {
+      interpretation.push('هموگلوبین شما بالاتر از حد نرمال است که ممکن است به دلیل کم‌آبی یا مشکلات قلبی و ریوی باشد.');
+      supplementaryTests.highHb.forEach(t => tests.add(t));
+    } else {
+      interpretation.push('هموگلوبین شما در محدوده نرمال است.');
+    }
+
+    if (cbcValues.WBC < normalRanges.WBC.min) {
+      interpretation.push('تعداد گلبول‌های سفید پایین است که ممکن است به ضعف سیستم ایمنی اشاره کند.');
+      supplementaryTests.lowWbc.forEach(t => tests.add(t));
+    } else if (cbcValues.WBC > normalRanges.WBC.max) {
+      interpretation.push('تعداد گلبول‌های سفید بالا است که ممکن است نشان‌دهنده عفونت یا التهاب باشد.');
+      supplementaryTests.highWbc.forEach(t => tests.add(t));
+    } else {
+      interpretation.push('تعداد گلبول‌های سفید در محدوده نرمال است.');
+    }
+
+    if (cbcValues.Plt < normalRanges.Plt.min) {
+      interpretation.push('تعداد پلاکت‌ها پایین است که ممکن است خطر خونریزی را افزایش دهد.');
+      supplementaryTests.lowPlt.forEach(t => tests.add(t));
+    } else if (cbcValues.Plt > normalRanges.Plt.max) {
+      interpretation.push('تعداد پلاکت‌ها بالاست که ممکن است نشان‌دهنده التهاب یا مشکلات مغز استخوان باشد.');
+     

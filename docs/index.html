@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <title>تفسیر آزمایش CBC</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; direction: rtl; background: #f4f4f4; }
+    body { font-family: sans-serif; padding: 20px; direction: rtl; background: #f9f9f9; }
     input, select { padding: 6px; margin: 6px 0; width: 100%; box-sizing: border-box; }
-    button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .result { margin-top: 20px; background: #fff; padding: 10px; border-radius: 5px; }
+    button { padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; width: 100%; }
+    button:hover { background: #218838; }
+    .result { margin-top: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px #ddd; }
     .abnormal { color: red; font-weight: bold; }
+    .normal { color: green; }
   </style>
 </head>
 <body>
-  <h2>برنامه تفسیر آزمایش CBC</h2>
+  <h2>تحلیل آزمایش CBC</h2>
 
   <label>سن:</label>
   <input type="number" id="age">
@@ -24,56 +25,109 @@
     <option value="female">زن</option>
   </select>
 
-  <label>Hb:</label>
-  <input type="number" id="hb">
+  <hr>
 
-  <label>WBC:</label>
-  <input type="number" id="wbc">
+  <label>WBC (10^3/μL):</label><input type="number" id="wbc">
+  <label>RBC (10^6/μL):</label><input type="number" id="rbc">
+  <label>HGB (g/dL):</label><input type="number" id="hgb">
+  <label>HCT (%):</label><input type="number" id="hct">
+  <label>MCV (fL):</label><input type="number" id="mcv">
+  <label>MCH (pg):</label><input type="number" id="mch">
+  <label>MCHC (g/dL):</label><input type="number" id="mchc">
+  <label>RDW (%):</label><input type="number" id="rdw">
+  <label>PLT (10^3/μL):</label><input type="number" id="plt">
+  <label>MPV (fL):</label><input type="number" id="mpv">
 
-  <label>Platelet:</label>
-  <input type="number" id="plt">
+  <hr>
 
-  <button onclick="analyze()">تفسیر</button>
+  <label>Neutrophils (%):</label><input type="number" id="neutro">
+  <label>Lymphocytes (%):</label><input type="number" id="lympho">
+  <label>Monocytes (%):</label><input type="number" id="mono">
+  <label>Eosinophils (%):</label><input type="number" id="eosino">
+  <label>Basophils (%):</label><input type="number" id="baso">
+
+  <button onclick="analyze()">تفسیر آزمایش</button>
 
   <div class="result" id="result"></div>
 
   <script>
+    function status(value, min, max) {
+      if (value < min) return {text: "پایین‌تر از نرمال", class: "abnormal"};
+      if (value > max) return {text: "بالاتر از نرمال", class: "abnormal"};
+      return {text: "نرمال", class: "normal"};
+    }
+
     function analyze() {
-      const age = parseInt(document.getElementById("age").value);
-      const gender = document.getElementById("gender").value;
-      const hb = parseFloat(document.getElementById("hb").value);
-      const wbc = parseFloat(document.getElementById("wbc").value);
-      const plt = parseFloat(document.getElementById("plt").value);
+      let g = document.getElementById;
+      const gender = g("gender").value;
+      const age = parseInt(g("age").value);
+      const data = {
+        wbc: parseFloat(g("wbc").value),
+        rbc: parseFloat(g("rbc").value),
+        hgb: parseFloat(g("hgb").value),
+        hct: parseFloat(g("hct").value),
+        mcv: parseFloat(g("mcv").value),
+        mch: parseFloat(g("mch").value),
+        mchc: parseFloat(g("mchc").value),
+        rdw: parseFloat(g("rdw").value),
+        plt: parseFloat(g("plt").value),
+        mpv: parseFloat(g("mpv").value),
+        neutro: parseFloat(g("neutro").value),
+        lympho: parseFloat(g("lympho").value),
+        mono: parseFloat(g("mono").value),
+        eosino: parseFloat(g("eosino").value),
+        baso: parseFloat(g("baso").value),
+      };
 
-      let output = "";
+      let output = "<h3>نتایج اولیه:</h3>";
 
-      // Hb
-      let hbMin = gender === "male" ? 13 : 12;
-      let hbMax = gender === "male" ? 17 : 15.5;
-      if (hb < hbMin)
-        output += `<p>هموگلوبین: <span class="abnormal">پایین‌تر از حد نرمال</span></p>`;
-      else if (hb > hbMax)
-        output += `<p>هموگلوبین: <span class="abnormal">بالاتر از حد نرمال</span></p>`;
-      else
-        output += `<p>هموگلوبین: نرمال</p>`;
+      // محدوده نرمال (نمونه ساده)
+      const ranges = {
+        hgb: gender === "male" ? [13.5, 17.5] : [12, 15.5],
+        wbc: [4, 11],
+        rbc: gender === "male" ? [4.7, 6.1] : [4.2, 5.4],
+        hct: gender === "male" ? [41, 53] : [36, 46],
+        mcv: [80, 100],
+        mch: [27, 33],
+        mchc: [32, 36],
+        rdw: [11.5, 14.5],
+        plt: [150, 450],
+        mpv: [7.5, 11.5],
+        neutro: [40, 60],
+        lympho: [20, 40],
+        mono: [2, 8],
+        eosino: [1, 4],
+        baso: [0.5, 1]
+      };
 
-      // WBC
-      if (wbc < 4)
-        output += `<p>گلبول سفید: <span class="abnormal">کمتر از حد نرمال</span></p>`;
-      else if (wbc > 11)
-        output += `<p>گلبول سفید: <span class="abnormal">بیشتر از حد نرمال</span></p>`;
-      else
-        output += `<p>گلبول سفید: نرمال</p>`;
+      for (const key in data) {
+        if (isNaN(data[key])) continue;
+        let s = status(data[key], ranges[key][0], ranges[key][1]);
+        output += `<p>${key.toUpperCase()}: <span class="${s.class}">${s.text}</span> (${data[key]})</p>`;
+      }
 
-      // Platelet
-      if (plt < 150)
-        output += `<p>پلاکت: <span class="abnormal">کمتر از حد نرمال</span></p>`;
-      else if (plt > 400)
-        output += `<p>پلاکت: <span class="abnormal">بیشتر از حد نرمال</span></p>`;
-      else
-        output += `<p>پلاکت: نرمال</p>`;
+      // تفسیر بالینی نمونه‌ای
+      let clinical = "<h3>تفسیر احتمالی:</h3><ul>";
 
-      document.getElementById("result").innerHTML = output;
+      if (data.hgb < ranges.hgb[0] && data.mcv < 80) {
+        clinical += "<li>شواهدی از <b>کم‌خونی میکروسیتیک</b> (مثل فقر آهن) وجود دارد.</li>";
+      }
+      if (data.hgb < ranges.hgb[0] && data.mcv > 100) {
+        clinical += "<li>کم‌خونی ماکروسیتیک مطرح است (مثل B12 یا فولیک اسید پایین).</li>";
+      }
+      if (data.wbc > 11) {
+        clinical += "<li>ممکن است <b>عفونت حاد</b> یا التهاب وجود داشته باشد.</li>";
+      }
+      if (data.plt < 150) {
+        clinical += "<li><b>ترومبوسیتوپنی</b> (پلاکت پایین) وجود دارد. نیاز به بررسی بیشتر دارد.</li>";
+      }
+      if (data.rdw > 14.5) {
+        clinical += "<li>افزایش RDW ممکن است نشانه‌ای از <b>کم‌خونی ترکیبی</b> یا فقر تغذیه‌ای باشد.</li>";
+      }
+
+      clinical += "</ul>";
+
+      document.getElementById("result").innerHTML = output + clinical;
     }
   </script>
 </body>

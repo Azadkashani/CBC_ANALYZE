@@ -1,1 +1,80 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>تفسیر آزمایش CBC</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; direction: rtl; background: #f4f4f4; }
+    input, select { padding: 6px; margin: 6px 0; width: 100%; box-sizing: border-box; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .result { margin-top: 20px; background: #fff; padding: 10px; border-radius: 5px; }
+    .abnormal { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>برنامه تفسیر آزمایش CBC</h2>
 
+  <label>سن:</label>
+  <input type="number" id="age">
+
+  <label>جنسیت:</label>
+  <select id="gender">
+    <option value="male">مرد</option>
+    <option value="female">زن</option>
+  </select>
+
+  <label>Hb:</label>
+  <input type="number" id="hb">
+
+  <label>WBC:</label>
+  <input type="number" id="wbc">
+
+  <label>Platelet:</label>
+  <input type="number" id="plt">
+
+  <button onclick="analyze()">تفسیر</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    function analyze() {
+      const age = parseInt(document.getElementById("age").value);
+      const gender = document.getElementById("gender").value;
+      const hb = parseFloat(document.getElementById("hb").value);
+      const wbc = parseFloat(document.getElementById("wbc").value);
+      const plt = parseFloat(document.getElementById("plt").value);
+
+      let output = "";
+
+      // Hb
+      let hbMin = gender === "male" ? 13 : 12;
+      let hbMax = gender === "male" ? 17 : 15.5;
+      if (hb < hbMin)
+        output += `<p>هموگلوبین: <span class="abnormal">پایین‌تر از حد نرمال</span></p>`;
+      else if (hb > hbMax)
+        output += `<p>هموگلوبین: <span class="abnormal">بالاتر از حد نرمال</span></p>`;
+      else
+        output += `<p>هموگلوبین: نرمال</p>`;
+
+      // WBC
+      if (wbc < 4)
+        output += `<p>گلبول سفید: <span class="abnormal">کمتر از حد نرمال</span></p>`;
+      else if (wbc > 11)
+        output += `<p>گلبول سفید: <span class="abnormal">بیشتر از حد نرمال</span></p>`;
+      else
+        output += `<p>گلبول سفید: نرمال</p>`;
+
+      // Platelet
+      if (plt < 150)
+        output += `<p>پلاکت: <span class="abnormal">کمتر از حد نرمال</span></p>`;
+      else if (plt > 400)
+        output += `<p>پلاکت: <span class="abnormal">بیشتر از حد نرمال</span></p>`;
+      else
+        output += `<p>پلاکت: نرمال</p>`;
+
+      document.getElementById("result").innerHTML = output;
+    }
+  </script>
+</body>
+</html>

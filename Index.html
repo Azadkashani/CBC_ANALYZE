@@ -177,12 +177,33 @@
     document.getElementById('interpretBtn').disabled = coins < 1;
   }
 
+  // اعتبارسنجی فرم و فعال کردن دکمه تفسیر
+  function validateInputs() {
+    const age = document.getElementById('age').value;
+    const gender = document.getElementById('gender').value;
+    const Hb = document.getElementById('Hb').value;
+    const WBC = document.getElementById('WBC').value;
+    const Plt = document.getElementById('Plt').value;
+    const Hct = document.getElementById('Hct').value;
+    const MCV = document.getElementById('MCV').value;
+    const MCH = document.getElementById('MCH').value;
+    const MCHC = document.getElementById('MCHC').value;
+
+    if (
+      age && gender && Hb && WBC && Plt && Hct && MCV && MCH && MCHC
+    ) {
+      document.getElementById('interpretBtn').disabled = getCoins() < 1;
+    } else {
+      document.getElementById('interpretBtn').disabled = true;
+    }
+  }
+
   // تفسیر آزمایش
   function interpretCBC(cbcValues, age, gender) {
     const interpretation = [];
     const tests = new Set();
 
-    const sex = (gender.toLowerCase() === 'مرد' || gender.toLowerCase() === 'male') ? 'male' : 'female';
+    const sex = (gender === 'مرد') ? 'male' : 'female';
 
     if (cbcValues.Hb < normalRanges.Hb[sex].min) {
       interpretation.push('هموگلوبین شما پایین است که ممکن است نشان‌دهنده کم‌خونی باشد.');
@@ -209,4 +230,12 @@
       supplementaryTests.lowPlt.forEach(t => tests.add(t));
     } else if (cbcValues.Plt > normalRanges.Plt.max) {
       interpretation.push('تعداد پلاکت‌ها بالاست که ممکن است نشان‌دهنده التهاب یا مشکلات مغز استخوان باشد.');
-     
+      supplementaryTests.highPlt.forEach(t => tests.add(t));
+    } else {
+      interpretation.push('تعداد پلاکت‌ها در محدوده نرمال است.');
+    }
+
+    if (cbcValues.Hct < normalRanges.Hct[sex].min) {
+      interpretation.push('هماتوکریت پایین است که ممکن است نشان‌دهنده کم‌خونی باشد.');
+      supplementaryTests.lowHct.forEach(t => tests.add(t));
+    } else if

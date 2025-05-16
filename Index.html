@@ -239,3 +239,79 @@
       interpretation.push('هماتوکریت پایین است که ممکن است نشان‌دهنده کم‌خونی باشد.');
       supplementaryTests.lowHct.forEach(t => tests.add(t));
     } else if
+    } else {
+      interpretation.push('هماتوکریت در محدوده نرمال است.');
+    }
+
+    if (cbcValues.MCV < normalRanges.MCV.min || cbcValues.MCV > normalRanges.MCV.max) {
+      interpretation.push('مقدار MCV خارج از محدوده نرمال است و ممکن است نوع خاصی از کم‌خونی را نشان دهد.');
+    } else {
+      interpretation.push('MCV در محدوده نرمال است.');
+    }
+
+    if (cbcValues.MCH < normalRanges.MCH.min || cbcValues.MCH > normalRanges.MCH.max) {
+      interpretation.push('مقدار MCH خارج از محدوده نرمال است.');
+    } else {
+      interpretation.push('MCH در محدوده نرمال است.');
+    }
+
+    if (cbcValues.MCHC < normalRanges.MCHC.min || cbcValues.MCHC > normalRanges.MCHC.max) {
+      interpretation.push('مقدار MCHC خارج از محدوده نرمال است.');
+    } else {
+      interpretation.push('MCHC در محدوده نرمال است.');
+    }
+
+    return {
+      summary: interpretation.join('\n'),
+      recommendations: Array.from(tests).join('\n')
+    };
+  }
+
+  // هندل کلیک دکمه تفسیر
+  document.getElementById('interpretBtn').addEventListener('click', () => {
+    const age = Number(document.getElementById('age').value);
+    const gender = document.getElementById('gender').value;
+    const cbcValues = {
+      Hb: Number(document.getElementById('Hb').value),
+      WBC: Number(document.getElementById('WBC').value),
+      Plt: Number(document.getElementById('Plt').value),
+      Hct: Number(document.getElementById('Hct').value),
+      MCV: Number(document.getElementById('MCV').value),
+      MCH: Number(document.getElementById('MCH').value),
+      MCHC: Number(document.getElementById('MCHC').value),
+    };
+
+    const result = interpretCBC(cbcValues, age, gender);
+    document.getElementById('result').textContent = result.summary;
+    document.getElementById('supplementary').textContent = result.recommendations
+      ? `توصیه به آزمایش‌های تکمیلی:\n${result.recommendations}`
+      : '';
+    
+    const coins = getCoins();
+    if (coins > 0) setCoins(coins - 1);
+  });
+
+  // هندل خرید سکه
+  document.querySelectorAll('.coin-packages button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const addCoins = Number(btn.getAttribute('data-coins'));
+      const current = getCoins();
+      setCoins(current + addCoins);
+      alert(`${addCoins} سکه به کیف پول شما اضافه شد (شبیه‌سازی‌شده)`);
+    });
+  });
+
+  // آپدیت وضعیت اولیه
+  updateInterpretButton();
+
+  // بررسی ورودی‌ها برای فعال‌سازی دکمه
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', validateInputs);
+    el.addEventListener('change', validateInputs);
+  });
+
+  validateInputs(); // اجرای اولیه
+</script>
+
+</body>
+</html>
